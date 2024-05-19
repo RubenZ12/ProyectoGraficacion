@@ -1,0 +1,234 @@
+/*DibujoFiguras/
+/**
+ *
+ * @author Ruben Ortega Rodriguez
+ */
+package DibujoFiguras;
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+
+public class DibujoFiguras extends JFrame implements ActionListener {
+
+    private JPanel panelDibujo;
+    private int x = 0, y = 0, rotacion = 0;
+    private Figura figura = Figura.CASA;
+    private Image imagen = null;
+
+    // Enumeración para las figuras
+    private enum Figura {
+        CASA, PAISAJE, CIRCULO, RECTANGULO, IMAGEN
+    }
+
+    public DibujoFiguras() {
+        super("Dibujo de Figuras");
+
+        // Preguntar por las coordenadas de inicio
+        String xCoord = JOptionPane.showInputDialog("Ingrese la coordenada X inicial:");
+        String yCoord = JOptionPane.showInputDialog("Ingrese la coordenada Y inicial:");
+        try {
+            x = Integer.parseInt(xCoord);
+            y = Integer.parseInt(yCoord);
+        } catch (NumberFormatException e) {
+            x = 0;
+            y = 0;
+        }
+
+        // Crear panel de dibujo
+        panelDibujo = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.rotate(Math.toRadians(rotacion), x, y);
+                // Dibujar la figura seleccionada
+                switch (figura) {
+                    case CASA:
+                        dibujarCasa(g2d, x, y);
+                        break;
+                    case PAISAJE:
+                        dibujarPaisaje(g2d, x, y);
+                        break;
+                    case CIRCULO:
+                        dibujarCirculo(g2d, x, y);
+                        break;
+                    case RECTANGULO:
+                        dibujarRectangulo(g2d, x, y);
+                        break;
+                    case IMAGEN:
+                        dibujarImagen(g2d, x, y);
+                        break;
+                }
+            }
+        };
+        panelDibujo.setBackground(Color.WHITE);
+        panelDibujo.setPreferredSize(new Dimension(500, 500));
+
+        // Agregar panel al JFrame
+        getContentPane().add(panelDibujo);
+
+        // Crear menú
+        JMenuBar barraMenu = new JMenuBar();
+        JMenu menuFigura = new JMenu("Figura");
+        JMenuItem itemCasa = new JMenuItem("Casa");
+        itemCasa.addActionListener(this);
+        menuFigura.add(itemCasa);
+
+        JMenuItem itemPaisaje = new JMenuItem("Paisaje");
+        itemPaisaje.addActionListener(this);
+        menuFigura.add(itemPaisaje);
+
+        JMenuItem itemCirculo = new JMenuItem("Círculo");
+        itemCirculo.addActionListener(this);
+        menuFigura.add(itemCirculo);
+
+        JMenuItem itemRectangulo = new JMenuItem("Rectángulo");
+        itemRectangulo.addActionListener(this);
+        menuFigura.add(itemRectangulo);
+
+        JMenuItem itemImagen = new JMenuItem("Cargar Imagen");
+        itemImagen.addActionListener(this);
+        menuFigura.add(itemImagen);
+
+        barraMenu.add(menuFigura);
+
+        JMenu menuTransformar = new JMenu("Transformar");
+        JMenuItem itemMoverArriba = new JMenuItem("Mover Arriba");
+        itemMoverArriba.addActionListener(this);
+        menuTransformar.add(itemMoverArriba);
+
+        JMenuItem itemMoverAbajo = new JMenuItem("Mover Abajo");
+        itemMoverAbajo.addActionListener(this);
+        menuTransformar.add(itemMoverAbajo);
+
+        JMenuItem itemMoverIzquierda = new JMenuItem("Mover Izquierda");
+        itemMoverIzquierda.addActionListener(this);
+        menuTransformar.add(itemMoverIzquierda);
+
+        JMenuItem itemMoverDerecha = new JMenuItem("Mover Derecha");
+        itemMoverDerecha.addActionListener(this);
+        menuTransformar.add(itemMoverDerecha);
+
+        JMenuItem itemRotarDerecha = new JMenuItem("Rotar Derecha");
+        itemRotarDerecha.addActionListener(this);
+        menuTransformar.add(itemRotarDerecha);
+
+        JMenuItem itemRotarIzquierda = new JMenuItem("Rotar Izquierda");
+        itemRotarIzquierda.addActionListener(this);
+        menuTransformar.add(itemRotarIzquierda);
+
+        barraMenu.add(menuTransformar);
+
+        setJMenuBar(barraMenu);
+
+        // Agregar listener al panel para capturar eventos de mouse
+        panelDibujo.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                x = e.getX();
+                y = e.getY();
+                panelDibujo.repaint();
+            }
+        });
+
+        // Configurar JFrame
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String comando = e.getActionCommand();
+        switch (comando) {
+            case "Casa":
+                figura = Figura.CASA;
+                break;
+            case "Paisaje":
+                figura = Figura.PAISAJE;
+                break;
+            case "Círculo":
+                figura = Figura.CIRCULO;
+                break;
+            case "Rectángulo":
+                figura = Figura.RECTANGULO;
+                break;
+            case "Cargar Imagen":
+                cargarImagen();
+                figura = Figura.IMAGEN;
+                break;
+            case "Mover Arriba":
+                y -= 10;
+                break;
+            case "Mover Abajo":
+                y += 10;
+                break;
+            case "Mover Izquierda":
+                x -= 10;
+                break;
+            case "Mover Derecha":
+                x += 10;
+                break;
+            case "Rotar Derecha":
+                rotacion += 10;
+                break;
+            case "Rotar Izquierda":
+                rotacion -= 10;
+                break;
+        }
+        panelDibujo.repaint();
+    }
+
+    private void cargarImagen() {
+        JFileChooser fileChooser = new JFileChooser();
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            imagen = Toolkit.getDefaultToolkit().getImage(fileChooser.getSelectedFile().getPath());
+        }
+    }
+
+    private void dibujarCasa(Graphics2D g2d, int x, int y) {
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(x, y, 100, 100);
+        g2d.fillRect(x + 10, y + 10, 80, 80);
+
+        g2d.setColor(Color.RED);
+        g2d.fillRect(x + 20, y + 60, 20, 30);
+
+        g2d.setColor(Color.BLUE);
+        g2d.fillRect(x + 60, y + 20, 20, 20);
+
+        g2d.setColor(Color.GRAY);
+        int[] xTriangulo = {x + 50, x, x + 100};
+        int[] yTriangulo = {y, y + 50, y + 50};
+        g2d.fillPolygon(xTriangulo, yTriangulo, 3);
+    }
+
+    private void dibujarPaisaje(Graphics2D g2d, int x, int y) {
+        // Implementar el dibujo del paisaje
+    }
+
+    private void dibujarCirculo(Graphics2D g2d, int x, int y) {
+        g2d.setColor(Color.GREEN);
+        g2d.fillOval(x - 50, y - 50, 100, 100);
+    }
+
+    private void dibujarRectangulo(Graphics2D g2d, int x, int y) {
+        g2d.setColor(Color.MAGENTA);
+        g2d.fillRect(x - 50, y - 25, 100, 50);
+    }
+
+    private void dibujarImagen(Graphics2D g2d, int x, int y) {
+        if (imagen != null) {
+            g2d.drawImage(imagen, x, y, this);
+        }
+    }
+
+    public static void main(String[] args) {
+        new DibujoFiguras();
+    }
+}
+
+/*Hola*/
