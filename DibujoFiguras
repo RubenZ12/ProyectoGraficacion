@@ -6,6 +6,7 @@ public class DibujoFiguras extends JFrame implements ActionListener {
 
     private JPanel panelDibujo;
     private int x = 0, y = 0, rotacion = 0;
+    private double escala = 1.0; // Nueva variable para la escala
     private Figura figura = Figura.CASA;
     private Image imagen = null;
 
@@ -35,6 +36,7 @@ public class DibujoFiguras extends JFrame implements ActionListener {
                 super.paintComponent(g);
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.rotate(Math.toRadians(rotacion), x, y);
+                g2d.scale(escala, escala); // Aplicar la escala
                 // Dibujar la figura seleccionada
                 switch (figura) {
                     case CASA:
@@ -111,6 +113,11 @@ public class DibujoFiguras extends JFrame implements ActionListener {
         itemRotarIzquierda.addActionListener(this);
         menuTransformar.add(itemRotarIzquierda);
 
+        // Nuevo elemento de menú para escalar la imagen
+        JMenuItem itemEscalar = new JMenuItem("Escalar Imagen");
+        itemEscalar.addActionListener(this);
+        menuTransformar.add(itemEscalar);
+
         barraMenu.add(menuTransformar);
 
         setJMenuBar(barraMenu);
@@ -170,6 +177,9 @@ public class DibujoFiguras extends JFrame implements ActionListener {
             case "Rotar Izquierda":
                 rotacion -= 10;
                 break;
+            case "Escalar Imagen":
+                escalarImagen();
+                break;
         }
         panelDibujo.repaint();
     }
@@ -179,6 +189,15 @@ public class DibujoFiguras extends JFrame implements ActionListener {
         int result = fileChooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
             imagen = Toolkit.getDefaultToolkit().getImage(fileChooser.getSelectedFile().getPath());
+        }
+    }
+
+    private void escalarImagen() {
+        String escalaInput = JOptionPane.showInputDialog("Ingrese el factor de escala (por ejemplo, 1.5 para aumentar o 0.5 para disminuir):");
+        try {
+            escala = Double.parseDouble(escalaInput);
+        } catch (NumberFormatException e) {
+            escala = 1.0;
         }
     }
 
@@ -199,7 +218,7 @@ public class DibujoFiguras extends JFrame implements ActionListener {
         g2d.fillPolygon(xTriangulo, yTriangulo, 3);
     }
 
-     private void dibujarPaisaje(Graphics2D g2d, int x, int y) {
+    private void dibujarPaisaje(Graphics2D g2d, int x, int y) {
         g2d.setColor(new Color(139, 69, 19)); // Color marrón
         g2d.fillRect(x - 10, y, 20, 60);
         g2d.setColor(Color.GREEN);
@@ -207,6 +226,7 @@ public class DibujoFiguras extends JFrame implements ActionListener {
         g2d.fillOval(x - 40, y - 20, 80, 40);
         g2d.fillOval(x - 30, y - 10, 60, 40);
     }
+
     private void dibujarCirculo(Graphics2D g2d, int x, int y) {
         g2d.setColor(Color.GREEN);
         g2d.fillOval(x - 50, y - 50, 100, 100);
@@ -219,7 +239,9 @@ public class DibujoFiguras extends JFrame implements ActionListener {
 
     private void dibujarImagen(Graphics2D g2d, int x, int y) {
         if (imagen != null) {
-            g2d.drawImage(imagen, x, y, this);
+            int ancho = (int) (imagen.getWidth(this) * escala);
+            int alto = (int) (imagen.getHeight(this) * escala);
+            g2d.drawImage(imagen, x, y, ancho, alto, this);
         }
     }
 
